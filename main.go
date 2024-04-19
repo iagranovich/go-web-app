@@ -29,12 +29,16 @@ func getPage(title string) (*page, error) {
 	}, nil
 }
 
+func loadTemplate(name string, w http.ResponseWriter, p *page) error {
+	t, err := template.ParseFiles(name)
+	t.Execute(w, p)
+	return err
+}
+
 func handlerRead(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/read/"):]
 	p, _ := getPage(title)
-
-	t, _ := template.ParseFiles("read.html")
-	t.Execute(w, p)
+	loadTemplate("read.html", w, p)
 }
 
 func handlerEdit(w http.ResponseWriter, r *http.Request) {
@@ -43,9 +47,7 @@ func handlerEdit(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		p = &page{Title: title}
 	}
-
-	t, _ := template.ParseFiles("edit.html")
-	t.Execute(w, p)
+	loadTemplate("edit.html", w, p)
 }
 
 func handlerSave(w http.ResponseWriter, r *http.Request) {
