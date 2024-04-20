@@ -37,7 +37,11 @@ func loadTemplate(name string, w http.ResponseWriter, p *page) error {
 
 func handlerRead(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/read/"):]
-	p, _ := getPage(title)
+	p, err := getPage(title)
+	if err != nil {
+		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
+		return
+	}
 	loadTemplate("read.html", w, p)
 }
 
