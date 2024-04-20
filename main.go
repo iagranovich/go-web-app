@@ -29,10 +29,16 @@ func getPage(title string) (*page, error) {
 	}, nil
 }
 
-func loadTemplate(name string, w http.ResponseWriter, p *page) error {
+func loadTemplate(name string, w http.ResponseWriter, p *page) {
 	t, err := template.ParseFiles(name)
-	t.Execute(w, p)
-	return err
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = t.Execute(w, p)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func handlerRead(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +64,10 @@ func handlerSave(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/save/"):]
 	data := r.FormValue("data")
 	p := &page{Title: title, Data: []byte(data)}
-	p.save()
+	if err := p.save(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	http.Redirect(w, r, "/read/"+title, http.StatusFound)
 }
 
