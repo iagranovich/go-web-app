@@ -5,9 +5,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 )
 
 var templates = template.Must(template.ParseFiles("edit.html", "read.html"))
+var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
 
 type page struct {
 	Title string
@@ -38,8 +40,7 @@ func loadTemplate(name string, w http.ResponseWriter, p *page) {
 	}
 }
 
-func handlerRead(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/read/"):]
+func handlerRead(w http.ResponseWriter, r *http.Request, title string) {
 	p, err := getPage(title)
 	if err != nil {
 		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
@@ -48,8 +49,7 @@ func handlerRead(w http.ResponseWriter, r *http.Request) {
 	loadTemplate("read.html", w, p)
 }
 
-func handlerEdit(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/edit/"):]
+func handlerEdit(w http.ResponseWriter, r *http.Request, title string) {
 	p, err := getPage(title)
 	if err != nil {
 		p = &page{Title: title}
@@ -57,8 +57,7 @@ func handlerEdit(w http.ResponseWriter, r *http.Request) {
 	loadTemplate("edit.html", w, p)
 }
 
-func handlerSave(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/save/"):]
+func handlerSave(w http.ResponseWriter, r *http.Request, title string) {
 	data := r.FormValue("data")
 	p := &page{Title: title, Data: []byte(data)}
 	if err := p.save(); err != nil {
@@ -68,9 +67,20 @@ func handlerSave(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/read/"+title, http.StatusFound)
 }
 
+func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		m := validPath.FindStringSubmatch(r.URL.Path)
+		if m == nil {
+			http.NotFound(w, r)
+			return
+		}
+		fn(w, r, m[2])
+	}
+}
+
 func main() {
-	http.HandleFunc("/read/", handlerRead)
-	http.HandleFunc("/edit/", handlerEdit)
-	http.HandleFunc("/save/", handlerSave)
+	http.HandleFunc("/read/", makeHandler(handlerRead))
+	http.HandleFunc("/edit/", makeHandler(handlerEdit))
+	http.HandleFunc("/save/", makeHandler(handlerSave))
 	log.Fatal(http.ListenAndServe(":8089", nil))
 }
