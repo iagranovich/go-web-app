@@ -79,8 +79,11 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.Handl
 }
 
 func main() {
+	cfg := LoadConfig()
+
 	http.HandleFunc("/read/", makeHandler(handlerRead))
 	http.HandleFunc("/edit/", makeHandler(handlerEdit))
 	http.HandleFunc("/save/", makeHandler(handlerSave))
-	log.Fatal(http.ListenAndServe(":8089", nil))
+
+	log.Fatal(http.ListenAndServe(cfg.Port, nil))
 }
