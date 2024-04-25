@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"log"
@@ -16,7 +16,7 @@ type HTTPServer struct {
 	Port string `yaml:"port"`
 }
 
-func LoadConfig() *Config {
+func Load() *Config {
 
 	nv := "CONFIG_PATH_SIPLEWEBAPP"
 	path := os.Getenv(nv)
