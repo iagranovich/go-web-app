@@ -2,10 +2,11 @@ package main
 
 import (
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 	"regexp"
+
+	"golang.org/x/exp/slog"
 )
 
 var templates = template.Must(template.ParseFiles("edit.html", "read.html"))
@@ -78,12 +79,31 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.Handl
 	}
 }
 
+func setupLogger(env string) *slog.Logger {
+	var log *slog.Logger
+
+	switch env {
+	case "dev":
+		log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	case "prod":
+		log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	case "test":
+		log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	}
+
+	return log
+}
+
 func main() {
 	cfg := LoadConfig()
+	log := setupLogger(cfg.Env)
 
 	http.HandleFunc("/read/", makeHandler(handlerRead))
 	http.HandleFunc("/edit/", makeHandler(handlerEdit))
 	http.HandleFunc("/save/", makeHandler(handlerSave))
 
-	log.Fatal(http.ListenAndServe(cfg.Port, nil))
+	if err := http.ListenAndServe(cfg.Port, nil); err != nil {
+		log.Error("cannot start server", slog.String("error", err.Error()))
+	}
+	log.Error("server down")
 }
