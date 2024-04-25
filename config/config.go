@@ -18,10 +18,10 @@ type HTTPServer struct {
 
 func Load() *Config {
 
-	nv := "CONFIG_PATH_SIPLEWEBAPP"
-	path := os.Getenv(nv)
+	ev := "CONFIG_PATH_SIMPLEWEBAPP"
+	path := os.Getenv(ev)
 	if path == "" {
-		log.Fatalf("%s is not set", nv)
+		log.Fatalf("%s is not set", ev)
 	}
 
 	var cfg Config
