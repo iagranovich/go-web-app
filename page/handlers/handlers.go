@@ -33,6 +33,7 @@ func Save(w http.ResponseWriter, r *http.Request, title string) {
 	data := r.FormValue("data")
 	p := &model.Page{Title: title, Data: []byte(data)}
 	if err := storage.SavePage(p); err != nil {
+		//TO DO: add log
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -42,6 +43,7 @@ func Save(w http.ResponseWriter, r *http.Request, title string) {
 func loadTemplate(name string, w http.ResponseWriter, p *model.Page) {
 	err := templates.ExecuteTemplate(w, name, p)
 	if err != nil {
+		//TO DO: add log
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

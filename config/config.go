@@ -21,7 +21,7 @@ func Load() *Config {
 	ev := "CONFIG_PATH_SIMPLEWEBAPP"
 	path := os.Getenv(ev)
 	if path == "" {
-		log.Fatalf("%s is not set", ev)
+		log.Fatalf("environment variable %s is not set", ev)
 	}
 
 	var cfg Config
